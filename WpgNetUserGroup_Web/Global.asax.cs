@@ -4,6 +4,10 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using Microsoft.WindowsAzure;
+using Microsoft.WindowsAzure.StorageClient;
+using Microsoft.WindowsAzure.ServiceRuntime;
+using WpgNetUserGroup_Web.Data;
 
 namespace WpgNetUserGroup_Web
 {
@@ -35,6 +39,16 @@ namespace WpgNetUserGroup_Web
 
             RegisterGlobalFilters(GlobalFilters.Filters);
             RegisterRoutes(RouteTable.Routes);
+
+            CloudStorageAccount.SetConfigurationSettingPublisher((configKey, settingPublisher) =>
+                {
+                    var config = RoleEnvironment.GetConfigurationSettingValue(configKey);
+                    settingPublisher(config);
+                });
+
+            var account = CloudStorageAccount.FromConfigurationSetting("DataContext");
+
+            CloudTableClient.CreateTablesFromModel(typeof(DataContext), account.TableEndpoint.AbsoluteUri, account.Credentials);
         }
     }
 }
